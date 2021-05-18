@@ -30,6 +30,25 @@ El controlador se encarga de mediar entre la vista y el modelo.
 """
 
 # Inicialización del Catálogo de libros
+def loadCatalog(catalog):
+
+    catalog = model.initcatalog()
+
+    connections0 = cf.data_dir + "connections.csv"
+    connections = csv.DictReader(open(connections0, encoding="utf-8-sig"),
+                                delimiter=",")
+    
+    landing_points0 = cf.data_dir + "landing_points.csv"
+    landing_points = csv.DictReader(open(landing_points0, encoding="utf-8"),
+                                delimiter=",")
+
+    countries0 = cf.data_dir + "countries.csv"
+    countries = csv.DictReader(open(countries0, encoding="utf-8"),
+                                delimiter=",")
+
+    model.suicidenme(catalog, landing_points, connections)
+
+    return catalog
 
 # Funciones para la carga de datos
 

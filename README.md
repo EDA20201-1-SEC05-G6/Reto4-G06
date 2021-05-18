@@ -1,5 +1,9 @@
 #ISIS1225 - Librerias de soporte
 
+# Integrantes:
+* Tomás Bedoya Calixto, t.bedoya@uniandes.edu.co, 202020689
+* Andrés Felipe Gómez García, af.gomezg1@uniandes.edu.co, 202021189
+
 Este proyecto contiene los Tipos abstractos de datos, estructuras de datos y algoritmos requeridos por el curso ISIS1225-Estructuras de Datos y Algoritmos
 
 -Lib

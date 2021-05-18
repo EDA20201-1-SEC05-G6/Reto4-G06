@@ -37,7 +37,11 @@ operación solicitada
 def printMenu():
     print("Bienvenido")
     print("1- Cargar información en el catálogo")
-    print("2- ")
+    print("2- Encontrar la cantidad de clústeres dentro de la red y consultar si 2 landing points pertenecen o no a un mismo clúster")
+    print("3- Encontrar los landing points que sirven como puntos de interconexión a más cables en la red")
+    print("4- Encontrar la ruta mínima en distancia para enviar información entre dos países (entre las capitales)")
+    print("5- Encontrar la red de expansión mínima con mayor cobertura")
+    print("6- Consultar el impacto que tendría el fallo de un landing point determinado")
 
 catalog = None
 
@@ -49,9 +53,17 @@ while True:
     inputs = input('Seleccione una opción para continuar\n')
     if int(inputs[0]) == 1:
         print("Cargando información de los archivos ....")
+        catalog = controller.loadCatalog(catalog)
 
-    elif int(inputs[0]) == 2:
-        pass
+    elif int(inputs[0]) == 2: pass
+
+    elif int(inputs[0]) == 3: pass
+
+    elif int(inputs[0]) == 4: pass
+
+    elif int(inputs[0]) == 5: pass
+
+    elif int(inputs[0]) == 6: pass
 
     else:
         sys.exit(0)
