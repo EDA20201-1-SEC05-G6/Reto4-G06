@@ -29,7 +29,7 @@ import csv
 El controlador se encarga de mediar entre la vista y el modelo.
 """
 
-# Inicialización del Catálogo de libros
+# Funciones para la carga de datos
 def loadCatalog(catalog):
 
     catalog = model.initcatalog()
@@ -46,12 +46,31 @@ def loadCatalog(catalog):
     countries = csv.DictReader(open(countries0, encoding="utf-8"),
                                 delimiter=",")
 
-    model.suicidenme(catalog, landing_points, connections)
+    idVertice1 = model.suicidenme(catalog, landing_points, connections)
+    model.suicidenmeLaSecuela(catalog,countries)
 
-    return catalog
-
-# Funciones para la carga de datos
+    return catalog, idVertice1
 
 # Funciones de ordenamiento
 
 # Funciones de consulta sobre el catálogo
+
+def req1(catalog, lp1, lp2):
+
+    return model.req1(catalog, lp1, lp2)
+
+def req2(catalog):
+    
+    return model.req2(catalog)
+
+def req3(catalog, pais1, pais2):
+
+    return model.req3(catalog, pais1, pais2)
+
+def req4(catalog):
+
+    return model.req4(catalog)
+
+def req5(catalog, lp):
+
+    return model.req5(catalog, lp)

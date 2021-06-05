@@ -24,15 +24,21 @@
  * Dario Correal - Version inicial
  """
 
-
 from DISClib.DataStructures.chaininghashtable import keySet
 import config as cf
 import haversine as hs
 from DISClib.ADT.graph import gr, vertices
 from DISClib.ADT import list as lt
 from DISClib.ADT import map as mp
+from DISClib.ADT import queue as q
+from DISClib.ADT import stack as st
+from DISClib.Algorithms.Graphs import scc
+from DISClib.Algorithms.Graphs import dfs
+from DISClib.Algorithms.Graphs import dijsktra
+from DISClib.Algorithms.Graphs import prim
 from DISClib.DataStructures import mapentry as me
 from DISClib.Algorithms.Sorting import shellsort as sa
+
 assert cf
 
 """
@@ -50,8 +56,6 @@ def initcatalog():
                "traduccion":None,
                "paises":None,
                "connections":None,
-               "components":None,
-               "paths":None
                 }
 
     catalog["cables"] = mp.newMap(maptype="PROBING", loadfactor=0.3)
@@ -98,6 +102,8 @@ def suicidenme(catalog, landing_points, connections):
             lista = me.getValue(mp.get(mapa_traduccion, nombre))
             lt.addLast(lista, id)
 
+        mp.put(mapa_traduccion, id, nombre)
+
 
         if not mp.contains(mapa_pais, pais):
             mp.put(mapa_pais, pais, lt.newList(datastructure="SINGLE_LINKED"))
@@ -112,7 +118,7 @@ def suicidenme(catalog, landing_points, connections):
             lt.addLast(sublista, id)
 
 
-        mp.put(mapa_landing, id, (loc, mp.newMap(maptype="PROBING", loadfactor=0.3)))
+        mp.put(mapa_landing, id, (loc, mp.newMap(maptype="PROBING", loadfactor=0.3), pais))
 
     
     for num, connection in enumerate(connections):
@@ -138,38 +144,20 @@ def suicidenme(catalog, landing_points, connections):
             mapa = me.getValue(mp.get(mapa_landing, destination))[1]
             mp.put(mapa, cable_name, None)
         
-            #Incersión de Vertices a Grafo:
+            #Incersión de Vertices a Grafo con arcos:
+
+            posOrigin = mp.get(mapa_landing, origin)["value"][0]
+            posDestination = mp.get(mapa_landing, destination)["value"][0]
+            costo = hs.haversine(posOrigin, posDestination)
 
             origin = origin + "|" + cable_name
             destination = destination + "|" + cable_name
 
             gr.insertVertex(grafo, origin)
             gr.insertVertex(grafo, destination)
-
-    #Creación de arcos entre vertices de un mismo cable:
-
-    llaves = mp.keySet(mapa_cables_landing)
+            gr.addEdge(grafo, origin, destination, costo)
     
-    for llave in lt.iterator(llaves):
-
-        landingPoints = mp.keySet(mp.get(mapa_cables_landing, llave)["value"])
-
-        for landingPoint in lt.iterator(landingPoints):
-
-            for landingPoint1 in lt.iterator(landingPoints):
-
-                if landingPoint != landingPoint1:
-
-                    origen = landingPoint + "|" + llave
-                    destino = landingPoint1 + "|" + llave
-
-                    if gr.getEdge(grafo, origen, destino) == None:
-
-                        pos1 = mp.get(mapa_landing, landingPoint)["value"][0]
-                        pos2 = mp.get(mapa_landing, landingPoint1)["value"][0]
-                        costo = hs.haversine(pos1, pos2)
-
-                        gr.addEdge(grafo, origen, destino, costo)
+    idVertice1 = lt.getElement(gr.vertices(catalog["connections"]),1).split("|")[0]
     
     #Creación de arcos entre vertices de un mismo Landing Point:
 
@@ -200,6 +188,8 @@ def suicidenme(catalog, landing_points, connections):
                         gr.addEdge(grafo, origen, destino, 0.1)
         
         mp.put(mapa_cables, llave, bwMenor)
+    
+    return idVertice1
 
 #Creación de vertices y arcos de capitales
 
@@ -279,10 +269,158 @@ def suicidenmeLaSecuela(catalog, countries):
                 gr.addEdge(grafo, capital, destino, distanciaMin)
             
             mp.put(mapa_cables, capital, bw)
+    
 
 # Funciones para creacion de datos
 
 # Funciones de consulta
+
+def req1(catalog, lp1, lp2):
+
+    grafo = catalog["connections"]
+    landing_points = catalog["landing_points"]
+    traductor = catalog["traduccion"]
+
+    componentes = scc.KosarajuSCC(grafo)
+    numComponentes = scc.sccCount(grafo, componentes, "4177|Aden-Djibouti")["components"]
+
+    try:
+        lp1 = lt.getElement(mp.get(traductor, lp1)["value"], 1)
+        vertice1 = lp1 + "|" + lt.getElement(mp.keySet(mp.get(landing_points, lp1)["value"][1]),1)
+    except TypeError:
+        vertice1 = lp1
+
+    try:
+        lp2 = lt.getElement(mp.get(traductor, lp2)["value"], 1)
+        vertice2 = lp2 + "|" + lt.getElement(mp.keySet(mp.get(landing_points, lp2)["value"][1]),1)
+    except TypeError:
+        vertice2 = lp2
+
+    areConnected = scc.stronglyConnected(componentes, vertice1, vertice2)
+
+    return numComponentes, areConnected
+
+
+def req2(catalog):
+
+    landing_points = catalog["landing_points"]
+    traductor = catalog["traduccion"]
+
+    resultado = lt.newList(datastructure= "SINGLE_LINKED")
+
+    llaves = mp.keySet(landing_points)
+
+    for lp in lt.iterator(llaves):
+
+        numCables = mp.size(mp.get(landing_points, lp)["value"][1])
+
+        if numCables > 1:
+
+            id = lp
+            nombre = mp.get(traductor, lp)["value"]
+            pais = mp.get(landing_points, lp)["value"][2]
+
+            lt.addLast(resultado, (id, nombre, pais, numCables))
+
+    return resultado
+
+
+def req3(catalog, pais1, pais2):
+
+    mapa_paises = catalog["paises"]
+    grafo = catalog["connections"]
+
+    capital1 = lt.getElement(mp.get(mapa_paises, pais1)["value"], 1)
+    capital2 = lt.getElement(mp.get(mapa_paises, pais2)["value"], 1)
+
+    caminosMinimos = dijsktra.Dijkstra(grafo, capital1)
+    costo = dijsktra.distTo(caminosMinimos, capital2)
+    recorrido = dijsktra.pathTo(caminosMinimos, capital2)
+
+    return costo, recorrido
+
+def req4(catalog):
+
+    grafo = catalog["connections"]
+
+    initSearch = prim.initSearch(grafo)
+    search = prim.prim(grafo, initSearch, "Washington, D.C.")
+    mst = gr.newGraph(datastructure="ADJ_LIST", size= 3000, directed=False, comparefunction=compareIds)
+
+    landing_points = mp.newMap(numelements= 1249, maptype= "PROBING", loadfactor= 0.3)    
+    vertices = mp.keySet(search["marked"])
+   
+    for vertice in lt.iterator(vertices):
+
+        lp = vertice.split("|")[0]
+        mp.put(landing_points, lp, None)
+        gr.insertVertex(mst, vertice)
+
+    numLanding_points = mp.size(landing_points)
+
+    listaArcos = mp.keySet(search["edgeTo"])
+    pesoTotal = 0
+
+    for verticeB in lt.iterator(listaArcos):
+        
+        verticeA = mp.get(search["edgeTo"], verticeB)["value"]["vertexA"]
+        peso = mp.get(search["edgeTo"], verticeB)["value"]["weight"]
+        gr.addEdge(mst, verticeA, verticeB, peso)
+
+        pesoTotal+= peso
+
+    dfsSearch = dfs.DepthFirstSearch(mst, "Washington, D.C.")
+    maxArcos = 0
+    arcos = None
+
+    for vertice in lt.iterator(vertices):
+
+        if dfs.pathTo(dfsSearch, vertice):
+
+            numArcos = lt.size(dfs.pathTo(dfsSearch, vertice))
+
+            if numArcos > maxArcos:
+
+                maxArcos = numArcos
+                arcos = dfs.pathTo(dfsSearch, vertice)
+
+    return numLanding_points, pesoTotal, arcos
+
+
+def req5(catalog, lp):
+
+    grafo = catalog["connections"]
+    landing_points = catalog["landing_points"]
+    traductor = catalog["traduccion"]
+
+    lp = lt.getElement(mp.get(traductor, lp)["value"], 1)
+
+    paises = mp.newMap(numelements= 11, maptype="PROBING", loadfactor= 0.3)
+    mp.put(paises, mp.get(landing_points, lp)["value"][2], None)
+
+    cables = mp.keySet(mp.get(landing_points, lp)["value"][1])
+
+    for cable in lt.iterator(cables):
+
+        vertice = lp + "|" + cable
+        adjacents = gr.adjacents(grafo, vertice)
+
+        for adjacent in lt.iterator(adjacents):
+
+            try:
+
+                id = adjacent.split("|")[0]
+                pais =  mp.get(landing_points, id)["value"][2]
+
+                mp.put(paises, pais, None)
+
+            except TypeError: pass
+
+
+
+    return paises
+
+
 
 # Funciones utilizadas para comparar elementos dentro de una lista
 
