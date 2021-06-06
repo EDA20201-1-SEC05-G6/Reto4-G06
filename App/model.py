@@ -282,7 +282,8 @@ def req1(catalog, lp1, lp2):
     traductor = catalog["traduccion"]
 
     componentes = scc.KosarajuSCC(grafo)
-    numComponentes = scc.sccCount(grafo, componentes, "4177|Aden-Djibouti")["components"]
+
+    numComponentes = componentes["components"]
 
     try:
         lp1 = lt.getElement(mp.get(traductor, lp1)["value"], 1)
@@ -333,7 +334,7 @@ def req3(catalog, pais1, pais2):
     capital1 = lt.getElement(mp.get(mapa_paises, pais1)["value"], 1)
     capital2 = lt.getElement(mp.get(mapa_paises, pais2)["value"], 1)
 
-    caminosMinimos = dijsktra.Dijkstra(grafo, capital1)
+    caminosMinimos = dijsktra.Dijkstra(grafo, capital1) 
     costo = dijsktra.distTo(caminosMinimos, capital2)
     recorrido = dijsktra.pathTo(caminosMinimos, capital2)
 
@@ -356,8 +357,6 @@ def req4(catalog):
         mp.put(landing_points, lp, None)
         gr.insertVertex(mst, vertice)
 
-    numLanding_points = mp.size(landing_points)
-
     listaArcos = mp.keySet(search["edgeTo"])
     pesoTotal = 0
 
@@ -374,15 +373,18 @@ def req4(catalog):
     arcos = None
 
     for vertice in lt.iterator(vertices):
+        pathTo = dfs.pathTo(dfsSearch, vertice)
 
-        if dfs.pathTo(dfsSearch, vertice):
+        if pathTo:
 
-            numArcos = lt.size(dfs.pathTo(dfsSearch, vertice))
+            numArcos = lt.size(pathTo)
 
             if numArcos > maxArcos:
 
                 maxArcos = numArcos
-                arcos = dfs.pathTo(dfsSearch, vertice)
+                arcos = pathTo
+
+    numLanding_points = gr.numEdges(mst) + 1
 
     return numLanding_points, pesoTotal, arcos
 
