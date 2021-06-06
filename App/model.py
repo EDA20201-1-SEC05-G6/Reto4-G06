@@ -393,30 +393,37 @@ def req5(catalog, lp):
     landing_points = catalog["landing_points"]
     traductor = catalog["traduccion"]
 
-    lp = lt.getElement(mp.get(traductor, lp)["value"], 1)
+    try:
 
-    paises = mp.newMap(numelements= 11, maptype="PROBING", loadfactor= 0.3)
-    mp.put(paises, mp.get(landing_points, lp)["value"][2], None)
+        lp = lt.getElement(mp.get(traductor, lp)["value"], 1)
 
-    cables = mp.keySet(mp.get(landing_points, lp)["value"][1])
+        paises = mp.newMap(numelements= 11, maptype="PROBING", loadfactor= 0.3)
+        mp.put(paises, mp.get(landing_points, lp)["value"][2], None)
 
-    for cable in lt.iterator(cables):
+        cables = mp.keySet(mp.get(landing_points, lp)["value"][1])
 
-        vertice = lp + "|" + cable
-        adjacents = gr.adjacents(grafo, vertice)
+        for cable in lt.iterator(cables):
 
-        for adjacent in lt.iterator(adjacents):
+            vertice = lp + "|" + cable
+            adjacents = gr.adjacents(grafo, vertice)
 
-            try:
+            for adjacent in lt.iterator(adjacents):
 
                 id = adjacent.split("|")[0]
                 pais =  mp.get(landing_points, id)["value"][2]
 
                 mp.put(paises, pais, None)
 
-            except TypeError: pass
+    except TypeError:
+        paises = mp.newMap(numelements= 11, maptype="PROBING", loadfactor= 0.3)
+        adjacents = gr.adjacents(grafo, lp)
 
+        for adjacent in lt.iterator(adjacents):
 
+            id = adjacent.split("|")[0]
+            pais =  mp.get(landing_points, id)["value"][2]
+
+            mp.put(paises, pais, None)
 
     return paises
 

@@ -123,7 +123,7 @@ while True:
         resultado = controller.req4(catalog)
 
         print("Número de nodos incluidos en el arbol de expansión mínima: " + str(resultado[0]))
-        print("El peso de todos los arcos del arbol es: " + str(resultado[1]))
+        print("El peso de todos los arcos del arbol es: " + str(resultado[1]) + " Km")
         print("La ruta más larga es: ")
 
         for vertice in lt.iterator(resultado[2]):
@@ -136,7 +136,7 @@ while True:
         resultado = controller.req5(catalog, lp)
         paises = mp.keySet(resultado)
 
-        print("El número de paises afectados en caso de que el landing point consultado se dañase es " + str(mp.size(resultado)))
+        print("El número de paises afectados en caso de que el landing point consultado se dañase es " + str(mp.size(resultado)) + ":")
 
         for pais in lt.iterator(paises):
             print(pais)
