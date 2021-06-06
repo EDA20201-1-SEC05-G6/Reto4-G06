@@ -29,7 +29,8 @@ from DISClib.ADT import graph as gr
 from DISClib.ADT import queue as q
 from DISClib.ADT import stack as st
 assert cf
-
+import time
+import tracemalloc
 
 """
 La vista se encarga de la interacción con el usuario
@@ -37,6 +38,35 @@ Presenta el menu de opciones y por cada seleccion
 se hace la solicitud al controlador para ejecutar la
 operación solicitada
 """
+
+def getTime():
+    """
+    devuelve el instante tiempo de procesamiento en milisegundos
+    """
+    return float(time.perf_counter()*1000)
+
+
+def getMemory():
+    """
+    toma una muestra de la memoria alocada en instante de tiempo
+    """
+    return tracemalloc.take_snapshot()
+
+
+def deltaMemory(start_memory, stop_memory):
+    """
+    calcula la diferencia en memoria alocada del programa entre dos
+    instantes de tiempo y devuelve el resultado en bytes (ej.: 2100.0 B)
+    """
+    memory_diff = stop_memory.compare_to(start_memory, "filename")
+    delta_memory = 0.0
+
+    # suma de las diferencias en uso de memoria
+    for stat in memory_diff:
+        delta_memory = delta_memory + stat.size_diff
+    # de Byte -> kByte
+    delta_memory = delta_memory/1024.0
+    return delta_memory
 
 def printMenu():
     print("Bienvenido")
@@ -56,6 +86,13 @@ while True:
     printMenu()
     inputs = input('Seleccione una opción para continuar\n')
     if int(inputs[0]) == 1:
+        delta_time = -1.0
+        delta_memory = -1.0
+
+        tracemalloc.start()
+        start_time = getTime()
+        start_memory = getMemory()
+
         print("Cargando información de los archivos ....")
         resultado = controller.loadCatalog(catalog)
         catalog = resultado[0]
@@ -78,7 +115,22 @@ while True:
         print("Latitud: " + str(latitud))
         print("Longitud: " + str(longitud))
 
+        stop_time = getTime()
+        stop_memory = getMemory()
+        tracemalloc.stop()
+
+        delta_time = stop_time - start_time
+        delta_memory = deltaMemory(start_memory, stop_memory)
+
+        print(str(delta_time) + " " + str(delta_memory))
+
     elif int(inputs[0]) == 2:
+        delta_time = -1.0
+        delta_memory = -1.0
+
+        tracemalloc.start()
+        start_time = getTime()
+        start_memory = getMemory()
 
         lp1 = input("Ingrese el nombre del primer landing point: ")
         lp2 = input("Ingrese el nombre del segundo landing point: ")
@@ -93,8 +145,22 @@ while True:
         else:
             print("Los dos landing points consultados no se encuentran en el mismo componente conectado.\n") 
 
+        stop_time = getTime()
+        stop_memory = getMemory()
+        tracemalloc.stop()
+
+        delta_time = stop_time - start_time
+        delta_memory = deltaMemory(start_memory, stop_memory)
+
+        print(str(delta_time) + " " + str(delta_memory))
 
     elif int(inputs[0]) == 3:
+        delta_time = -1.0
+        delta_memory = -1.0
+
+        tracemalloc.start()
+        start_time = getTime()
+        start_memory = getMemory()
 
         resultado = controller.req2(catalog)
 
@@ -104,8 +170,23 @@ while True:
             print("ID: " + elemento[0])
             print("País en el que se encuentra: " + elemento[2])
             print("Número de cables a los que está conectado: " + str(elemento[3]) + "\n\n")
+        
+        stop_time = getTime()
+        stop_memory = getMemory()
+        tracemalloc.stop()
+
+        delta_time = stop_time - start_time
+        delta_memory = deltaMemory(start_memory, stop_memory)
+
+        print(str(delta_time) + " " + str(delta_memory))
 
     elif int(inputs[0]) == 4:
+        delta_time = -1.0
+        delta_memory = -1.0
+
+        tracemalloc.start()
+        start_time = getTime()
+        start_memory = getMemory()
 
         pais1 = input("Ingrese el primer país: ")
         pais2 = input("Ingrese el segundo país: ")
@@ -118,7 +199,22 @@ while True:
         for arco in lt.iterator(resultado[1]):
             print(arco["vertexA"] + " - " + arco["vertexB"] + ": " + str(arco["weight"]) + " Km.")
 
+        stop_time = getTime()
+        stop_memory = getMemory()
+        tracemalloc.stop()
+
+        delta_time = stop_time - start_time
+        delta_memory = deltaMemory(start_memory, stop_memory)
+
+        print(str(delta_time) + " " + str(delta_memory))
+
     elif int(inputs[0]) == 5:
+        delta_time = -1.0
+        delta_memory = -1.0
+
+        tracemalloc.start()
+        start_time = getTime()
+        start_memory = getMemory()
         
         resultado = controller.req4(catalog)
 
@@ -129,7 +225,22 @@ while True:
         for vertice in lt.iterator(resultado[2]):
             print(vertice)
 
-    elif int(inputs[0]) == 6: 
+        stop_time = getTime()
+        stop_memory = getMemory()
+        tracemalloc.stop()
+
+        delta_time = stop_time - start_time
+        delta_memory = deltaMemory(start_memory, stop_memory)
+
+        print(str(delta_time) + " " + str(delta_memory))
+
+    elif int(inputs[0]) == 6:
+        delta_time = -1.0
+        delta_memory = -1.0
+
+        tracemalloc.start()
+        start_time = getTime()
+        start_memory = getMemory() 
 
         lp = input("Ingrese el landing point que desea consultar: ")
 
@@ -141,6 +252,14 @@ while True:
         for pais in lt.iterator(paises):
             print(pais)
 
+        stop_time = getTime()
+        stop_memory = getMemory()
+        tracemalloc.stop()
+
+        delta_time = stop_time - start_time
+        delta_memory = deltaMemory(start_memory, stop_memory)
+        
+        print(str(delta_time) + " " + str(delta_memory))
 
     else:
         sys.exit(0)

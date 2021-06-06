@@ -409,10 +409,14 @@ def req5(catalog, lp):
 
             for adjacent in lt.iterator(adjacents):
 
-                id = adjacent.split("|")[0]
-                pais =  mp.get(landing_points, id)["value"][2]
+                try:
 
-                mp.put(paises, pais, None)
+                    id = adjacent.split("|")[0]
+                    pais =  mp.get(landing_points, id)["value"][2]
+
+                    mp.put(paises, pais, None)
+
+                except TypeError: pass
 
     except TypeError:
         paises = mp.newMap(numelements= 11, maptype="PROBING", loadfactor= 0.3)
@@ -420,10 +424,14 @@ def req5(catalog, lp):
 
         for adjacent in lt.iterator(adjacents):
 
-            id = adjacent.split("|")[0]
-            pais =  mp.get(landing_points, id)["value"][2]
+            try:
 
-            mp.put(paises, pais, None)
+                id = adjacent.split("|")[0]
+                pais =  mp.get(landing_points, id)["value"][2]
+
+                mp.put(paises, pais, None)
+
+            except TypeError: pass
 
     return paises
 
